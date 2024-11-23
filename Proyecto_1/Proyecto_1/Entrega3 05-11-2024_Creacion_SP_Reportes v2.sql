@@ -22,7 +22,7 @@ FOR XML PATH('ReporteTrimestral');
 end
 GO
 
----CREACION REPORTE Mensual: ingresando un mes y aÒo determinado mostrar el total facturado por dÌas de la semana, incluyendo s·bado y domingo.
+---CREACION REPORTE Mensual: ingresando un mes y a√±o determinado mostrar el total facturado por d√≠as de la semana, incluyendo s√°bado y domingo.
 GO
 CREATE or ALTER PROCEDURE update3.ReporteMensual (@mes int, @anio int)
 as
@@ -83,7 +83,7 @@ FOR XML PATH('ReporteRangoSucursal');
 end
 GO
 
-/*CREACION REPORTE Mostrar los 5 productos m·s vendidos en un mes, por semana*/
+/*CREACION REPORTE Mostrar los 5 productos m√°s vendidos en un mes, por semana*/
 GO
 CREATE or ALTER PROCEDURE update3.ReporteSemanal (@mes int, @anio int)
 as 
