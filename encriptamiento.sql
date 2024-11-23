@@ -1,4 +1,4 @@
-Create schema seguridad
+Create schema Seguridad
 --Encriptamiento de datos de la tabla empleado
 --1) creamos clave maestra
 create or alter procedure seguridad.crearclavemaestra
