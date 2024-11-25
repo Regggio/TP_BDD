@@ -28,7 +28,42 @@ begin
 end
 go
 
---4) SP para encriptar los datos del empleado
+--4. SP para encriptar datos
+create or alter procedure seguridad.encriptardatosempleado
+as
+begin
+    -- Abrimos la clave simétrica para encriptar los datos
+    open symmetric key empleadoskey
+    decryption by certificate certificadoempleados;
+
+    -- Alteramos las columnas para soportar datos binarios
+    ALTER TABLE grupo3.Empleado ALTER COLUMN direccion varbinary(max);
+    ALTER TABLE grupo3.Empleado ALTER COLUMN email_Personal varbinary(max);
+
+    -- Encriptamos las columnas con datos personales
+    update grupo3.Empleado
+    set direccion = ENCRYPTBYKEY(key_guid('empleadoskey'), CAST(direccion AS nvarchar(max))),
+        email_Personal = ENCRYPTBYKEY(key_guid('empleadoskey'), CAST(email_Personal AS nvarchar(max)))
+    where direccion IS NOT NULL or email_Personal IS NOT NULL;
+
+    -- Cerramos la clave simétrica
+    close symmetric key empleadoskey;
+
+    -- Mostramos los datos con "X" pero conservando los espacios y el @
+    select 
+        IdEmpleado, 
+        Nombre, 
+        replace(replace(replicate('X', len(cast(decryptbykey(direccion) as nvarchar(max)))), ' ', ' '), '@', '@') as direccion,
+        replace(replace(replicate('X', len(cast(decryptbykey(email_Personal) as nvarchar(max)))), ' ', ' '), '@', '@') as email_Personal
+    from grupo3.Empleado;
+
+end;
+go
+
+
+
+
+/*--4) SP para encriptar los datos del empleado
 create or alter procedure seguridad.encriptardatosempleado
 as
 begin
@@ -45,7 +80,7 @@ decryption by certificate certificadoempleados;
 --cerramos clave simetrica
   close symmetric key empleadoskey;
 end
-go
+go*/
 
 --pruebas
 --mostramos tabla empleados sin encirptar
