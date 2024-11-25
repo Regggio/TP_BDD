@@ -2,85 +2,87 @@
 GO
 use Com2900G03
 GO
---Crear usuario--
 
-CREATE LOGIN SupervisorLogin WITH PASSWORD = 'BaseDatos1';
-CREATE USER SupervisorUser FOR LOGIN SupervisorLogin;
-IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Supervisor')
-begin
-    CREATE ROLE Supervisor;
-end
-GRANT EXECUTE ON OBJECT::insert3.GenerarNotaDeCredito TO Supervisor;
-ALTER ROLE Supervisor ADD MEMBER SupervisorUser;
+	--Crear Roles-- 
 
+IF NOT EXISTS (SELECT 1 
+               FROM sys.database_principals 
+               WHERE type = 'R' 
+               AND name = 'Vendedor')
+CREATE ROLE Vendedor;
+GO
 
---Encriptamiento de datos de la tabla empleado
---1) creamos clave maestra
-create or alter procedure seguridad.crearclavemaestra
-as
-begin
-     create master key encryption by password='passwordGrupo3'
-end
-go
+IF NOT EXISTS (SELECT 1 
+               FROM sys.database_principals 
+               WHERE type = 'R' 
+               AND name = 'Supervisor')
+CREATE ROLE Supervisor;
+GO
 
---2) crear un certificado para encriptar
-create or alter procedure seguridad.crearcertifiado
-as
-begin
+	--Crea permisos al rol Supervisor
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA ::ventas TO Supervisor;
+GRANT EXECUTE ON SCHEMA:: ventas TO Supervisor; 
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON administracion.Producto TO Supervisor;
+GRANT SELECT, INSERT, UPDATE, DELETE ON administracion.NotaDeCredito TO Supervisor;
+
+GRANT SELECT ON administracion.Empleado TO Supervisor;
+GRANT SELECT ON administracion.FacturaControl TO Supervisor;
+
+GRANT EXECUTE ON administracion.InsertarProducto TO Supervisor;
+GRANT EXECUTE ON administracion.ModificarProducto TO Supervisor;
+GRANT EXECUTE ON administracion.EliminarProducto TO Supervisor;
+
+GRANT EXECUTE ON administracion.InsertarNotaDeCredito TO Supervisor;
+GRANT EXECUTE ON administracion.ModificarNotaDeCredito TO Supervisor;
+GRANT EXECUTE ON administracion.CancelarNotaDeCredito TO Supervisor;
+
+	--Crea permisos al rol Vendedor
+
+GRANT SELECT, INSERT ON ventas.Venta TO Vendedor;
+GRANT SELECT, INSERT ON ventas.DetalleVenta TO Vendedor;
+
+DENY SELECT, INSERT, UPDATE, DELETE ON SCHEMA::administracion TO Vendedor;
+DENY EXECUTE ON SCHEMA::administracion TO Vendedor;
+
+-- Ventas
+GRANT EXECUTE ON ventas.IniciarVenta TO Vendedor;
+GRANT EXECUTE ON ventas.AgregarDetalleVenta TO Vendedor;
+GRANT EXECUTE ON ventas.ConfirmarVenta TO Vendedor;
+GRANT EXECUTE ON ventas.ConfirmarPago TO Vendedor;
+GRANT EXECUTE ON ventas.CambiarMetodoPago TO Vendedor;
+GRANT EXECUTE ON ventas.CancelarVenta TO Vendedor;
+
+-- Clientes
+GRANT EXECUTE ON ventas.InsertarCliente TO Vendedor;
+GRANT EXECUTE ON ventas.ModificarCliente TO Vendedor;
+GRANT EXECUTE ON ventas.EliminarCliente TO Vendedor;
+
+	--Creacion del Loggin 
+
+IF NOT EXISTS (SELECT name, type_desc from sys.server_principals 
+		where name ="Prueba1_V") 
+Create login Prueba1_V with password= '1234' , default_database = "Com2900G03" ;
 	
-    create certificate certificadoempleados
-	   with subject='encriptacion de datos personales empleados'
-end
+IF NOT EXISTS (SELECT name, type_desc from sys.server_principals 
+		where name ="Prueba1_S") 
+Create login Prueba1_S with password= '1234' , default_database = "Com2900G03" ;
+
+	--Crear usuario para el login
+IF NOT EXISTS (SELECT * from sys.database_principals 
+		where name ="Prueba1_Usuario_V") 
+Create user Prueba1_Usuario_V for login Prueba1_V;
+
+IF NOT EXISTS (SELECT * from sys.database_principals 
+		where name ="Prueba1_Usuario_S") 
+Create user Prueba1_Usuario_S for login Prueba1_S;
+
+	--Asignacion de roles
+alter role Vendedor add member Prueba1_Usuario_V;
+go
+alter role Supervisor add member Prueba1_Usuario_S;
 go
 
---3) crear una clave simetrica, protegida por el certificado
-create or alter procedure seguridad.clavesimetrica
-as
-begin
-    create symmetric key empleadoskey
-	with algorithm= aes_256
-	encryption by certificate certificadoempleados
-end
-go
-
---4) SP para encriptar los datos del empleado
-create or alter procedure seguridad.encriptardatosempleado
-as
-begin
- --primero abrimos la clave simetrica para encriptar los datos
-open symmetric key empleadoskey
-decryption by certificate certificadoempleados;
- --encriptamos las columnas con datos personales
- ALTER TABLE grupo3.Empleado ALTER COLUMN direccion nvarchar(256)
- ALTER TABLE grupo3.Empleado ALTER COLUMN email_Personal nvarchar(256)
- update grupo3.Empleado
- set direccion=ENCRYPTBYKEY (key_guid('empleadoskey'),direccion),
-     email_Personal=ENCRYPTBYKEY (key_guid('empleadoskey'),email_Personal)
-	 --dni=ENCRYPTBYKEY (key_guid('empleadoskey'),dni);
---cerramos clave simetrica
-  close symmetric key empleadoskey;
-end
-go
-
---pruebas
---mostramos tabla empleados sin encirptar
-select * from grupo3.empleado
-
---creamos clave para encriptar
-drop master key
-exec seguridad.crearclavemaestra
-
---creamos certificado para encriptar
-exec seguridad.crearcertifiado
-
---creamos clave simetrica
-exec seguridad.clavesimetrica
-
---encriptamos datos de la tabla empleado
-exec seguridad.encriptardatosempleado
-
---verificamos que los datos hayan sido encriptados
-select * from grupo3.empleado
 
 ---BACKUP
 BACKUP DATABASE Com2900G03
