@@ -10,8 +10,9 @@ as
 begin
 SELECT
 	MONTH(v.fecha) as mes, 
-	e.Turno, sum(v.total) --over (partition by month(v.fecha), e.turno order by month(v.fecha)) as TotalMensual
-	FROM grupo3.Venta v 
+	e.Turno, sum(d.Cantidad*d.Precio_Unitario) AS TotalMensual--over (partition by month(v.fecha), e.turno order by month(v.fecha)) as TotalMensual
+	FROM grupo3.Detalle_Venta d
+	inner join grupo3.Venta v on d.id_Venta=v.id_Venta
 	inner join grupo3.Empleado e on v.id_Empleado=e.id_Empleado
 	WHERE 
         YEAR(v.fecha) = @anio 
@@ -26,127 +27,162 @@ FOR XML PATH('ReporteTrimestral');
 end
 GO
 
----CREACION REPORTE Mensual: ingresando un mes y aÒo determinado mostrar el total facturado por dÌas de la semana, incluyendo s·bado y domingo.
+---CREACION REPORTE Mensual: ingresando un mes y a√±o determinado mostrar el total facturado por d√≠as de la semana, incluyendo s√°bado y domingo.
 GO
-CREATE or ALTER PROCEDURE grupo3.ReporteMensual (@mes int, @anio int)
-as
-begin
-SELECT 
-    DATENAME(WEEKDAY, fecha) AS DiaSemana,
-    SUM(Total) AS TotalFacturado
-FROM 
-    grupo3.Venta v
-WHERE 
-    MONTH(fecha) = @mes AND YEAR(fecha) = @anio
-GROUP BY 
-    DATENAME(WEEKDAY, fecha)
-FOR XML PATH('ReporteMensual');
-end
+CREATE OR ALTER PROCEDURE grupo3.ReporteMensual (@mes INT, @anio INT)
+AS
+BEGIN
+    SELECT 
+        DATENAME(WEEKDAY, v.Fecha) AS DiaSemana,
+        SUM(d.Cantidad * d.Precio_Unitario) AS TotalFacturado
+    FROM 
+        grupo3.Detalle_Venta d
+        INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+    WHERE 
+        MONTH(v.Fecha) = @mes AND YEAR(v.Fecha) = @anio
+    GROUP BY 
+        DATENAME(WEEKDAY, v.Fecha)
+    ORDER BY 
+        DiaSemana
+    FOR XML PATH('ReporteMensual');
+END
 GO
 
 /*CREACION REPORTE Por rango de fechas: ingresando un rango de fechas a demanda, debe poder mostrar
 la cantidad de productos vendidos en ese rango, ordenado de mayor a menor.*/
 GO
-CREATE or ALTER PROCEDURE grupo3.ReporteRango (@fechaI date, @fechaF date)
-as
-begin
-SELECT
-	p.id_Producto, p.Nombre,
-	SUM(v.cantidad) OVER (PARTITION BY v.id_Producto) AS TotalVendidos
-FROM
-	grupo3.Producto p
-	inner join grupo3.Venta v on p.id_Producto = v.id_Producto
-WHERE
-	v.fecha BETWEEN @fechaI AND @fechaF
-ORDER BY
-	TotalVendidos DESC
-FOR XML PATH('ReporteRango');
-end
-
+CREATE OR ALTER PROCEDURE grupo3.ReporteRango (@fechaI DATE, @fechaF DATE)
+AS
+BEGIN
+    SELECT
+        p.id_Producto, 
+        p.Nombre,
+        SUM(d.Cantidad) AS TotalVendidos
+    FROM 
+        grupo3.Detalle_Venta d
+        INNER JOIN grupo3.Producto p ON p.id_Producto = d.id_Producto
+        INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+    WHERE
+        v.Fecha BETWEEN @fechaI AND @fechaF
+    GROUP BY
+        p.id_Producto, 
+        p.Nombre
+    ORDER BY
+        TotalVendidos DESC
+    FOR XML PATH('ReporteRango');
+END
 GO
 
 /*CREACION REPORTE Por rango de fechas: ingresando un rango de fechas a demanda, debe poder mostrar
 la cantidad de productos vendidos en ese rango por sucursal, ordenado de mayor a menor*/
 GO
-CREATE or ALTER PROCEDURE grupo3.ReporteRangoSucursal (@fechaI date, @fechaF date)
-as
-begin
-SELECT
-	s.Ciudad, p.id_Producto, p.Nombre,
-	SUM(v.cantidad) OVER (PARTITION BY v.id_Producto,s.Ciudad) AS TotalVendidosSucursal
-FROM
-	grupo3.Producto p
-	inner join grupo3.Venta v on p.id_Producto = v.id_Producto
-	inner join grupo3.Empleado e on v.id_Empleado = e.id_Empleado
-	inner join grupo3.Sucursal s on e.id_Sucursal = s.id_sucursal
-WHERE
-	v.fecha BETWEEN @fechaI AND @fechaF
-ORDER BY
-	TotalVendidosSucursal DESC
-FOR XML PATH('ReporteRangoSucursal');
-end
+CREATE OR ALTER PROCEDURE grupo3.ReporteRangoSucursal (@fechaI DATE, @fechaF DATE)
+AS
+BEGIN
+    SELECT
+        s.Ciudad, 
+        p.id_Producto, 
+        p.Nombre,
+        SUM(d.Cantidad) AS TotalVendidosSucursal
+    FROM
+        grupo3.Producto p
+        INNER JOIN grupo3.Detalle_Venta d ON p.id_Producto = d.id_Producto
+        INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+        INNER JOIN grupo3.Empleado e ON v.id_Empleado = e.id_Empleado
+        INNER JOIN grupo3.Sucursal s ON e.id_Sucursal = s.id_sucursal
+    WHERE
+        v.fecha BETWEEN @fechaI AND @fechaF
+    GROUP BY
+        s.Ciudad, 
+        p.id_Producto, 
+        p.Nombre
+    ORDER BY
+        TotalVendidosSucursal DESC
+    FOR XML PATH('ReporteRangoSucursal');
+END
 GO
 
-/*CREACION REPORTE Mostrar los 5 productos m·s vendidos en un mes, por semana*/
+/*CREACION REPORTE Mostrar los 5 productos m√°s vendidos en un mes, por semana*/
 GO
-CREATE or ALTER PROCEDURE grupo3.ReporteSemanal (@mes int, @anio int)
-as 
-begin
-	WITH VentasSemanales (id_Producto,Nombre,Semana,CantidadSemanal,Top5) AS (
-		SELECT p.id_Producto, p.Nombre,
-			NTILE (4) OVER (PARTITION BY DAY (v.fecha) order by DAY (v.fecha)) AS Semana,
-			SUM(v.Cantidad) OVER (PARTITION BY v.id_Producto, WEEK(v.fecha)) AS CantidadSemanal,
-			RANK () OVER (PARTITION BY WEEK(v.fecha) ORDER BY CantidadSemanal DESC) AS Top5
-		FROM
-			grupo3.Venta v
-			inner join grupo3.Producto p on v.id_Producto = p.id_Producto
-		WHERE 
-			MONTH (v.fecha) = @mes AND YEAR (v.fecha) = @anio)
-	SELECT *
-	FROM VentasSemanales
-	WHERE Top5 <= 5
-FOR XML PATH('ReporteSemanal');
-end
-GO
-
-GO
-CREATE or ALTER PROCEDURE grupo3.ReporteMenosVendidos (@mes int, @anio int)
-as
-begin
-	WITH VentasMensuales (id_Producto,Nombre,CantidadMensual) AS (
-		SELECT p.id_Producto, p.Nombre,
-		SUM(v.Cantidad) OVER (PARTITION BY v.id_Producto) AS CantidadMensual,
-		RANK() OVER (ORDER BY CantidadMensual ASC) AS Top5
-		FROM
-			grupo3.Venta v
-			inner join grupo3.Producto p on v.id_Producto = p.id_Producto
-			WHERE 
-            MONTH(v.fecha) = @mes AND YEAR(v.fecha) = @anio)
-	SELECT *
-	FROM VentasMensuales
-	WHERE Top5 <= 5
-FOR XML PATH('ReporteMenosVendidos');
-end
+CREATE OR ALTER PROCEDURE grupo3.ReporteSemanal (@mes INT, @anio INT)
+AS 
+BEGIN
+    WITH VentasSemanales (id_Producto, Nombre, Semana, CantidadSemanal, Top5) AS (
+        SELECT 
+            p.id_Producto, 
+            p.Nombre,
+            DATEPART(WEEK, v.Fecha) AS Semana,
+            SUM(d.Cantidad) AS CantidadSemanal,
+            RANK() OVER (PARTITION BY DATEPART(WEEK, v.Fecha) ORDER BY SUM(d.Cantidad) DESC) AS Top5
+        FROM
+            grupo3.Detalle_Venta d
+            INNER JOIN grupo3.Producto p ON d.id_Producto = p.id_Producto
+            INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+        WHERE 
+            MONTH(v.Fecha) = @mes AND YEAR(v.Fecha) = @anio
+        GROUP BY 
+            p.id_Producto, 
+            p.Nombre, 
+            DATEPART(WEEK, v.Fecha)
+    )
+    SELECT *
+    FROM VentasSemanales
+    WHERE Top5 <= 5
+    FOR XML PATH('ReporteSemanal');
+END
 GO
 
 GO
-CREATE or ALTER PROCEDURE grupo3.VentasFechaSucursal (@fecha date, @sucursal int)
-as
-begin
-	SELECT
-	s.Ciudad, v.fecha, p.id_Producto, p.Nombre,
-	SUM (v.Cantidad) OVER (PARTITION BY v.id_Producto) as CantidadVendida,
-	SUM (v.Total) OVER (PARTITION BY v.id_Producto) as TotalVendido
-	FROM 
-        grupo3.Venta v
-    inner join
-        grupo3.Producto p ON v.id_Producto = p.id_Producto
-    inner join 
-        grupo3.Empleado e ON v.id_Empleado = e.id_Empleado
-    inner join
-        grupo3.Sucursal s ON e.id_Sucursal = s.id_sucursal
+CREATE OR ALTER PROCEDURE grupo3.ReporteMenosVendidos (@mes INT, @anio INT)
+AS
+BEGIN
+    WITH VentasMensuales (id_Producto, Nombre, CantidadMensual, Top5) AS (
+        SELECT 
+            d.id_Producto, 
+            p.Nombre,
+            SUM(d.Cantidad) AS CantidadMensual,
+            RANK() OVER (ORDER BY SUM(d.Cantidad) ASC) AS Top5
+        FROM
+            grupo3.Detalle_Venta d
+            INNER JOIN grupo3.Producto p ON d.id_Producto = p.id_Producto
+            INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+        WHERE 
+            MONTH(v.fecha) = @mes AND YEAR(v.fecha) = @anio
+        GROUP BY 
+            d.id_Producto, 
+            p.Nombre
+    )
+    SELECT *
+    FROM VentasMensuales
+    WHERE Top5 <= 5
+    FOR XML PATH('ReporteMenosVendidos');
+END
+GO
+
+GO
+CREATE OR ALTER PROCEDURE grupo3.VentasFechaSucursal (@fecha DATE, @sucursal INT)
+AS
+BEGIN
+    SELECT
+        s.Ciudad, 
+        v.fecha, 
+        p.id_Producto, 
+        p.Nombre,
+        SUM(d.Cantidad) AS CantidadVendida,
+        SUM(d.Cantidad * d.Precio_Unitario) AS TotalVendido
+    FROM 
+        grupo3.Detalle_Venta d
+        INNER JOIN grupo3.Venta v ON d.id_Venta = v.id_Venta
+        INNER JOIN grupo3.Producto p ON d.id_Producto = p.id_Producto
+        INNER JOIN grupo3.Empleado e ON v.id_Empleado = e.id_Empleado
+        INNER JOIN grupo3.Sucursal s ON e.id_Sucursal = s.id_sucursal
     WHERE 
         v.fecha = @fecha AND s.id_sucursal = @sucursal
-FOR XML PATH('VentasFechaSucursal');
-end
+    GROUP BY
+        s.Ciudad, 
+        v.fecha, 
+        p.id_Producto, 
+        p.Nombre
+    FOR XML PATH('VentasFechaSucursal');
+END
 GO
