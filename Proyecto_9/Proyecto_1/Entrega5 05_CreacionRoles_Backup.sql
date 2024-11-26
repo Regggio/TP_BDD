@@ -3,7 +3,7 @@ GO
 use Com2900G03
 GO
 
-	--Crear Roles-- 
+	--Crear Roles
 
 IF NOT EXISTS (SELECT 1 
                FROM sys.database_principals 
@@ -33,8 +33,8 @@ GRANT EXECUTE ON administracion3.ModificarProducto TO Supervisor;
 GRANT EXECUTE ON administracion3.BorrarProducto TO Supervisor;
 
 GRANT EXECUTE ON administracion3.GenerarNotaDeCredito TO Supervisor;
-/*GRANT EXECUTE ON administracion3.ModificarNotaDeCredito TO Supervisor;
-GRANT EXECUTE ON administracion3.CancelarNotaDeCredito TO Supervisor;*/
+GRANT EXECUTE ON administracion3.ModificarNotaDeCredito TO Supervisor;
+GRANT EXECUTE ON administracion3.EliminarNotaDeCredito TO Supervisor;
 
 	--Crea permisos al rol Vendedor
 
@@ -44,7 +44,7 @@ GRANT SELECT, INSERT ON ventas3.Detalle_Venta TO Cajero;
 DENY SELECT, INSERT, UPDATE, DELETE ON SCHEMA::administracion3 TO Cajero;
 DENY EXECUTE ON SCHEMA::administracion3 TO Cajero;
 
--- Ventas
+--Ventas
 GRANT EXECUTE ON ventas3.TestFacturayVenta TO Cajero;
 GRANT EXECUTE ON ventas3.InsertarFactura TO Cajero;
 GRANT EXECUTE ON ventas3.BorrarFactura TO Cajero;
@@ -57,7 +57,7 @@ GRANT EXECUTE ON ventas3.Modificar_Detalle TO Cajero;
 GRANT EXECUTE ON ventas3.Borrar_Detalle TO Cajero;
 
 
-	--Creacion del Loggin 
+	--Creacion del Login 
 
 IF NOT EXISTS (SELECT name, type_desc from sys.server_principals 
 		where name ='Prueba1_V') 
