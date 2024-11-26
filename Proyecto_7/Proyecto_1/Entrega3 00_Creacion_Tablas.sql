@@ -1,19 +1,19 @@
-/*Luego de decidirse por un motor de base de datos relacional, llegÛ el momento de generar la
+/*Luego de decidirse por un motor de base de datos relacional, lleg√≥ el momento de generar la
 base de datos.
-Deber· instalar el DMBS y documentar el proceso. No incluya capturas de pantalla. Detalle
-las configuraciones aplicadas (ubicaciÛn de archivos, memoria asignada, seguridad, puertos,
-etc.) en un documento como el que le entregarÌa al DBA.
-Cree la base de datos, entidades y relaciones. Incluya restricciones y claves. Deber· entregar
-un archivo .sql con el script completo de creaciÛn (debe funcionar si se lo ejecuta ìtal cualî es
-entregado). Incluya comentarios para indicar quÈ hace cada mÛdulo de cÛdigo.
-Genere store procedures para manejar la inserciÛn, modificado, borrado (si corresponde,
-tambiÈn debe decidir si determinadas entidades solo admitir·n borrado lÛgico) de cada tabla.
-Los nombres de los store procedures NO deben comenzar con ìSPî.
-Genere esquemas para organizar de forma lÛgica los componentes del sistema y aplique esto
-en la creaciÛn de objetos. NO use el esquema ìdboî.
+Deber√° instalar el DMBS y documentar el proceso. No incluya capturas de pantalla. Detalle
+las configuraciones aplicadas (ubicaci√≥n de archivos, memoria asignada, seguridad, puertos,
+etc.) en un documento como el que le entregar√≠a al DBA.
+Cree la base de datos, entidades y relaciones. Incluya restricciones y claves. Deber√° entregar
+un archivo .sql con el script completo de creaci√≥n (debe funcionar si se lo ejecuta ‚Äútal cual‚Äù es
+entregado). Incluya comentarios para indicar qu√© hace cada m√≥dulo de c√≥digo.
+Genere store procedures para manejar la inserci√≥n, modificado, borrado (si corresponde,
+tambi√©n debe decidir si determinadas entidades solo admitir√°n borrado l√≥gico) de cada tabla.
+Los nombres de los store procedures NO deben comenzar con ‚ÄúSP‚Äù.
+Genere esquemas para organizar de forma l√≥gica los componentes del sistema y aplique esto
+en la creaci√≥n de objetos. NO use el esquema ‚Äúdbo‚Äù.
 El archivo .sql con el script debe incluir comentarios donde consten este enunciado, la fecha
-de entrega, n˙mero de grupo, nombre de la materia, nombres y DNI de los alumnos.
-Entregar todo en un zip cuyo nombre sea Grupo_XX.zip mediante la secciÛn de pr·cticas de
+de entrega, n√∫mero de grupo, nombre de la materia, nombres y DNI de los alumnos.
+Entregar todo en un zip cuyo nombre sea Grupo_XX.zip mediante la secci√≥n de pr√°cticas de
 MIEL. Solo uno de los miembros del grupo debe hacer la entrega.
 */
 
@@ -22,7 +22,7 @@ NRO GRUPO: 3
 BASE DE DATOS APLICADAS
 Julian Ezequiel Reggio Matina 44560058
 Santino Bruno 44392059
-Facu Goldring 44595085
+Facundo Goldring 44595085
 Bianca Camila Zarlenga 43993165
 */
 --- Creacion de la base de datos
@@ -76,7 +76,7 @@ GO
 CREATE SCHEMA import3
 
 GO
-DROP SCHEMA IF exists seguridad
+DROP SCHEMA IF exists seguridad3
 GO
 Create schema seguridad3
 GO
