@@ -47,12 +47,12 @@ go
 exec seguridad3.clavesimetrica
 
 
---4. SP para encriptar datos
+--4) SP para encriptar datos
 GO
 create or alter procedure seguridad3.encriptardatosempleado
 as
 begin
-    -- Abrimos la clave simétrica para encriptar los datos
+    -- Abrimos la clave simÃ©trica para encriptar los datos
     open symmetric key empleadoskey
     decryption by certificate certificadoempleados;
 
@@ -66,7 +66,7 @@ begin
 		CUIL = ENCRYPTBYKEY(key_guid('empleadoskey'),CUIL)
     where Direccion IS NOT NULL or email_Personal IS NOT NULL;
 
-    -- Cerramos la clave simétrica
+    -- Cerramos la clave simÃ©trica
     close symmetric key empleadoskey;
 end;
 go
@@ -76,7 +76,7 @@ go
 	create or alter procedure seguridad3.desencriptardatosempleado
 	as
 	begin
-		-- Abrimos la clave simétrica con el certificado
+		-- Abrimos la clave simÃ©trica con el certificado
 		open symmetric key empleadoskey
 		decryption by certificate certificadoempleados;
 		-- Seleccionamos los datos desencriptados
@@ -87,7 +87,7 @@ go
 			CUIL =CONVERT(nvarchar(256),DECRYPTBYKEY(CUIL))
 		ALTER TABLE administracion3.Empleado ALTER COLUMN DNI INT;
 
-		-- Cerramos la clave simétrica
+		-- Cerramos la clave simÃ©trica
 		close symmetric key empleadoskey;
 	end;
 	go
