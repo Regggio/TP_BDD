@@ -12,7 +12,7 @@ AS
 BEGIN 
 	DECLARE @MSJ varchar(50) = '';
 
-	--Valdiar Ciudad
+	--Validar Ciudad
 	IF(@Ciudad IN (SELECT Ciudad FROM administracion3.Sucursal))
 BEGIN
 	SET @MSJ = @MSJ + 'CIUDAD YA EXISTENTE '
@@ -23,7 +23,7 @@ END
 BEGIN
 	SET @MSJ = @MSJ + 'SUCURSAL YA EXISTENTE '
 END
-	---VALIDAR TAM DATOS
+	--Validar Tam Datos
 	IF(@MSJ = '' AND LEN(@Ciudad) > 20)
 	SET @MSJ = @MSJ + 'TAM DE CIUDAD EXCEDE EL MAXIMO '
 
@@ -64,7 +64,7 @@ AS
 BEGIN
 	DECLARE @MSJ varchar(50) = '';
 
-	--Valdiar Ciudad
+	--Validar Ciudad
 	IF(@Ciudad IN (SELECT Ciudad FROM administracion3.Sucursal))
 BEGIN
 	SET @MSJ = @MSJ + 'CIUDAD YA EXISTENTE '
@@ -90,7 +90,7 @@ ELSE
 END;
 GO
 
--- sp para borrado logico 
+--SP para borrado logico 
 GO
 CREATE OR ALTER PROCEDURE administracion3.BorrarSucursal
     @id_sucursal INT
@@ -123,15 +123,15 @@ AS
 BEGIN
 DECLARE @MSJ varchar(50) = '';
 
-	--Valdiar Ciudad
+	--Validar Ciudad
 	IF(@id_Sucursal NOT IN (SELECT id_sucursal FROM administracion3.Sucursal))
 	SET @MSJ = @MSJ + 'SUCURSAL INEXISTENTE'
 
-	--Valdiar Turno
+	--Validar Turno
 	IF(@MSJ = '' AND @Turno NOT IN ('TM','TT','Jornada Completa'))
 	SET @MSJ = @MSJ + 'TURNO INVALIDO'
 
-	--Valida Tam
+	--Validar Tam
 	IF(@MSJ = '' AND LEN(@Nombre) > 40)
 	SET @MSJ = @MSJ + 'TAM DEL NOMBRE EXCEDE EL MAXIMO'
 
@@ -220,7 +220,7 @@ ELSE
 END;
 GO
 
-----------------------INSERRTAR PRODUCTO
+----------------------INSERTAR PRODUCTO
 CREATE OR ALTER PROCEDURE administracion3.InsertarProducto
 	@Categoria varchar(50),
 	@Linea_De_Producto varchar(30),
@@ -239,7 +239,7 @@ DECLARE @MSJ varchar(50) = '';
 	IF(@MSJ = '' AND @Precio_De_Referencia <= 0)
 	SET @MSJ = @MSJ + 'EL PRECIO DE REFERENCIA DEBE SER POSTIVO'
 
-	--Valdiar Tam
+	--Validar Tam
 	IF(@MSJ = '' AND LEN(@Categoria) > 40)
 	SET @MSJ = @MSJ + 'TAM DEL CATEGORIA EXCEDE EL MAXIMO'
 
@@ -277,7 +277,7 @@ AS
 BEGIN
 DECLARE @MSJ varchar(50) = '';
 
-	---Validar precio positivo
+	--Validar precio positivo
 	IF(@Precio_Unitario <= 0)
 	SET @MSJ = @MSJ + 'EL PRECIO UNITARIO DEBE SER POSITIVO'
 
@@ -333,11 +333,11 @@ DECLARE @MSJ varchar(50) = ''
 	IF(@Genero NOT IN ('Male','Female'))
 	SET @MSJ = @MSJ + 'EL GENERO INGRESADO NO ES VALIDO'
 
-	---VALIDACION TIPO CLIENTE
+	--VALIDACION TIPO CLIENTE
 	IF(@MSJ = '' AND @Tipo_Cliente NOT IN ('Normal','Member'))
 	SET @MSJ = @MSJ + 'EL TIPO DE CLIENTE INGRESADO NO ES VALIDO'
 
-	---VALIDACION DE EMPLEADO 
+	--VALIDACION DE EMPLEADO 
 	IF(@MSJ = '' AND @id_empleado NOT IN (SELECT id_Empleado FROM administracion3.Empleado))
 	SET @MSJ = @MSJ + 'ID DE EMPLEADO INEXISTENTE'
 
@@ -372,15 +372,15 @@ AS
 BEGIN
 DECLARE @MSJ varchar(50) = ''
 
-	---VALIDACION GENERO
+	--VALIDACION GENERO
 	IF(@Genero NOT IN ('Male','Female'))
 	SET @MSJ = @MSJ + 'EL GENERO INGRESADO NO ES VALIDO'
 
-	---VALIDACION TIPO CLIENTE
+	--VALIDACION TIPO CLIENTE
 	IF(@MSJ = '' AND @Tipo_Cliente NOT IN ('Normal','Member'))
 	SET @MSJ = @MSJ + 'EL TIPO DE CLIENTE INGRESADO NO ES VALIDO'
 
-	---VALIDACION DE EMPLEADO 
+	--VALIDACION DE EMPLEADO 
 	IF(@MSJ = '' AND @id_empleado NOT IN (SELECT id_Empleado FROM administracion3.Empleado))
 	SET @MSJ = @MSJ + 'ID DE EMPLEADO INEXISTENTE'
 
@@ -426,11 +426,11 @@ AS
 BEGIN
 DECLARE @MSJ varchar(50) = ''
 	
-	---VALIDAR NUMERO FACTURA
+	--VALIDAR NUMERO FACTURA
 	IF(@Numero_Factura IN (SELECT Numero_Fac FROM ventas3.Factura))
 	SET @MSJ = @MSJ + 'EL NUMERO DE FACTURA INGRESADO YA EXISTE'
 
-	---VALIDAR TIPO DE FACTURA
+	--VALIDAR TIPO DE FACTURA
 	IF(@MSJ = '' AND @tipo_factura NOT IN ('A','B','C'))
 	SET @MSJ = @MSJ + 'EL TIPO DE FACTURA INGRESADO NO ES VALIDO'
 
@@ -482,7 +482,7 @@ AS
 BEGIN
 	IF(@id_factura IN (SELECT id_Factura FROM ventas3.Factura) AND (SELECT Estado FROM ventas3.Factura) <> 'Pagada')
 BEGIN
----CAMBIO PARA QUE LA FACTURA A CANCELADA
+--CAMBIO PARA QUE LA FACTURA A CANCELADA
 	UPDATE ventas3.Factura
 	SET Estado = 'Cancelada'
 	WHERE id_Factura = @id_factura
@@ -528,8 +528,7 @@ GO
 
 
 
-----------------------------------------------------------------------------------------
----INSERTAR DETALLE DE VENTA
+--------------------------------------------INSERTAR DETALLE DE VENTA
 GO
 CREATE OR ALTER PROCEDURE ventas3.Insertar_Detalle
 	@Cantidad int,
@@ -714,24 +713,22 @@ as
 begin
 	DECLARE @Rol varchar (50);
 	DECLARE @EstadoFactura varchar(50);
-	--Obtengo rol--
-	--SELECT @Rol = IS_MEMBER('SupervisorUser') = 1
 		
-	--verifico que sea supervisor--
+	--verifico que sea supervisor
 	IF (IS_ROLEMEMBER('Supervisor') = 1)
 	begin
 		RAISERROR ('Solo los supervisores pueden generar notas de credito',16,1);
 		RETURN;
 	end
-	--OBtengo estado factura--
+	--Obtengo estado factura
 	SELECT @EstadoFactura = Estado FROM ventas3.Factura WHERE id_Factura = @id_Factura
-	--Verifico que este paga--
+	--Verifico que este paga
 	IF @EstadoFactura <> 'Pagada'
 	begin
 		RAISERROR ('La factura debe estar pagada para generar notas de credito',16,1);
 		RETURN;
 	end
-	--Inserto nota de credito--
+	--Inserto nota de credito
 	INSERT INTO administracion3.Notadecredito (id_Factura, Total)
 	SELECT id_Factura, Total
 	FROM ventas3.Factura
@@ -747,11 +744,11 @@ BEGIN
     --Verifico que el usuario sea supervisor
     IF (IS_ROLEMEMBER('Supervisor') = 1)
     BEGIN
-        RAISERROR ('Solo los supervisores pueden eliminar notas de crédito', 16, 1);
+        RAISERROR ('Solo los supervisores pueden eliminar notas de crÃ©dito', 16, 1);
         RETURN;
     END
 
-    --Elimino la nota de crédito
+    --Elimino la nota de credito
     DELETE FROM administracion3.Notadecredito
     WHERE id_Nota = @id_NotaDeCredito;
 END
@@ -768,11 +765,11 @@ BEGIN
     --Verifico que el usuario sea supervisor
     IF (IS_ROLEMEMBER('Supervisor') = 1)
     BEGIN
-        RAISERROR ('Solo los supervisores pueden modificar notas de crédito', 16, 1);
+        RAISERROR ('Solo los supervisores pueden modificar notas de crÃ©dito', 16, 1);
         RETURN;
     END
 
-    --Modifico la nota de crédito
+    --Modifico la nota de credito
     UPDATE administracion3.Notadecredito
     SET Total = @NuevoTotal
     WHERE id_Nota = @id_NotaDeCredito;
