@@ -9,7 +9,7 @@ as
 begin
 SELECT
 	MONTH(v.fecha) as mes, 
-	e.Turno, sum(d.Cantidad*d.Precio_Unitario) AS TotalMensual--over (partition by month(v.fecha), e.turno order by month(v.fecha)) as TotalMensual
+	e.Turno, sum(d.Cantidad*d.Precio_Unitario) AS TotalMensual
 	FROM ventas3.Detalle_Venta d
 	inner join ventas3.Venta v on d.id_Venta=v.id_Venta
 	inner join administracion3.Empleado e on v.id_Empleado=e.id_Empleado
@@ -26,7 +26,7 @@ FOR XML PATH('ReporteTrimestral');
 end
 GO
 
----CREACION REPORTE Mensual: ingresando un mes y aÒo determinado mostrar el total facturado por dÌas de la semana, incluyendo s·bado y domingo.
+---CREACION REPORTE Mensual: ingresando un mes y a√±o determinado mostrar el total facturado por d√≠as de la semana, incluyendo s√°bado y domingo.
 GO
 CREATE OR ALTER PROCEDURE grupo3.ReporteMensual (@mes INT, @anio INT)
 AS
@@ -101,7 +101,7 @@ BEGIN
 END
 GO
 
-/*CREACION REPORTE Mostrar los 5 productos m·s vendidos en un mes, por semana*/
+/*CREACION REPORTE Mostrar los 5 productos m√°s vendidos en un mes, por semana*/
 GO
 CREATE OR ALTER PROCEDURE grupo3.ReporteSemanal (@mes INT, @anio INT)
 AS 
@@ -186,7 +186,7 @@ BEGIN
 END
 GO
 
---Creacion reporte general
+--Creacion Reporte general
 GO
 CREATE or ALTER PROCEDURE grupo3.ReporteGeneral
 AS
