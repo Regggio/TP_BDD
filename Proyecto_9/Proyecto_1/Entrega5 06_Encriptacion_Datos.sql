@@ -92,7 +92,7 @@ go
 	end;
 	go
 --pruebas
---mostramos tabla empleados sin encirptar
+--mostramos tabla empleados sin encriptar
 select * from administracion3.Empleado
 
 --encriptamos datos de la tabla empleado
